@@ -28,6 +28,10 @@
     "extensionDependencies": [
         "humy2833.ftp-simple"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/VitalyKondratiev/SSHExtension.git"
+    },
     "devDependencies": {
         "typescript": "^2.5.2",
         "vscode": "^1.1.5",
