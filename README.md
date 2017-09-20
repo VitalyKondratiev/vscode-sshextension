@@ -25,7 +25,7 @@ For more information on configuring ftp-simple you can find out the page of [thi
 
 ## Known Issues
 
-Works only with pageant on windows.
+Works only with 'pageant'.
 
 ## Roadmap
 
@@ -35,7 +35,3 @@ The list of servers is loaded ONLY during startup VSCode.
 ## Release Notes
 
 This is the first release in which the opening of the SSH session in the new instance of the VScode terminal is available.
-
-### 0.0.1
-
-Initial release.
