@@ -6,7 +6,7 @@ var cryptoUtil = require('./lib/crypto-util');
 const CONFIG_NAME = "ftp-simple.json";
 var outputChannel = null;
 
-var servers = null;
+var servers = [];
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -29,7 +29,7 @@ function activate(context) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    var disposable = vscode.commands.registerCommand('extension.openConnection', function () {
+    var disposable = vscode.commands.registerCommand('sshextension.openConnection', function () {
         // The code you place here will be executed every time your command is executed
         if (!servers.length) {
             vscode.window.showInformationMessage("You don't have any servers");

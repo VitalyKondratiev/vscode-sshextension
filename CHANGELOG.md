@@ -2,8 +2,11 @@
 All notable changes to the "sshextension" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+ 
+## 0.0.4 (Patch)
+- Fixed bug with no ftp-simple.json file
 
-## 0.0.3 
+## 0.0.3 (Patch)
 - The required dependencies of Node.js in production have been added
 - Added extension icon
 

@@ -26,11 +26,11 @@ For more information on configuring ftp-simple you can find out the page of [thi
 ## Known Issues
 
 Works only with 'pageant'.
+The list of servers is loaded ONLY during startup VSCode.
 
 ## Roadmap
 
 Add the ability to work with a password or private key.  
-The list of servers is loaded ONLY during startup VSCode.
 
 ## Release Notes
 
