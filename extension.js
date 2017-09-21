@@ -3,52 +3,71 @@
 var vscode = require('vscode');
 var vsUtil = require('./lib/vs-util');
 var cryptoUtil = require('./lib/crypto-util');
+var pathUtil = require('./lib/path-util');
+var commandExistsSync = require('command-exists').sync;
 const CONFIG_NAME = "ftp-simple.json";
 var outputChannel = null;
 
 var servers = [];
+var terminals = [];
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    outputChannel = vsUtil.getOutputChannel("ssh-extension");
-    var config = initConfig();
-    if (config.result) {
-        servers = [];
-        config.json.forEach(function (element) {
-            if (element.type != "sftp") return;
-            var server = { "name": element.name, "configuration": element };
-            servers.push(server);
-        }, this);
-        vsUtil.output(outputChannel, "SSHExtension succesfully started and loaded " + servers.length + " server(s)");
-    }
+    initExtension();
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    var disposable = vscode.commands.registerCommand('sshextension.openConnection', function () {
-        // The code you place here will be executed every time your command is executed
+    // Command palette 'Open SSH Connection'
+    context.subscriptions.push(vscode.commands.registerCommand('sshextension.openConnection', function () {
         if (!servers.length) {
             vscode.window.showInformationMessage("You don't have any servers");
             return;
         }
+        // Create list of server names
         var names = [];
         servers.forEach(function (element) {
             names.push(element.name);
         }, this);
+        // Show Command Palette with server list of servers
         vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
             if (item === undefined) return;
             var server = servers.find(function (element, index, array) { return element.name == this }, item);
-            var term = vscode.window.createTerminal();
-            term.sendText('ssh ' + server.configuration.host + ' -l ' + server.configuration.username);
-            term.show();
+            var terminal = terminals.find(function (element, index, array) { return element.name == this }, item);
+            if (terminal === undefined) { // If the terminal does not exist
+                var terminal = vscode.window.createTerminal(item);
+                terminals.push({ "name": item, "terminal": terminal });
+                var sshCommand = null;
+                // Authorization through an agent
+                if (server.configuration.agent !== undefined && server.configuration.agent)
+                    sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username;
+                // Authorization by private key
+                if (server.configuration.privateKey !== undefined && server.configuration.privateKey)
+                    sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username
+                        + ' -i "' + server.configuration.privateKey + '"';
+                if (sshCommand != null)
+                    terminal.sendText(sshCommand);
+            }
+            else { // If the terminal instance was found
+                terminal = terminal.terminal;
+            }
+            terminal.show();
         })
-    });
-
-    context.subscriptions.push(disposable);
+    }));
+    // Launch reload ftp-simple config if changed
+    context.subscriptions.push(vscode.workspace.onWillSaveTextDocument(function (event) {
+        var remoteTempPath = pathUtil.normalize(event.document.fileName);
+        var configTempPath = pathUtil.normalize(vsUtil.getConfigPath() + 'ftp-simple-temp.json');
+        if (configTempPath != remoteTempPath) return;
+        loadServerList(event.document.getText());
+    }));
+    // If terminal closed 
+    context.subscriptions.push(vscode.window.onDidCloseTerminal(function (event) {
+        var terminal = terminals.find(function (element, index, array) {
+            return element.terminal._id == this._id
+        }, event);
+        if (terminal !== undefined)
+            terminals.shift(terminal);
+    }));
 }
 exports.activate = activate;
 
@@ -56,16 +75,8 @@ exports.activate = activate;
 function deactivate() {
 }
 
-function getConfig() {
-    var json = {};
-    var config = initConfig();
-    if (config.result) {
-        json = config.json;
-    }
-    return json;
-}
-
-function initConfig() {
+// Loads an object that contains a list of servers in JSON format
+function loadFtpSimpleConfig() {
     var result = true;
     var json = vsUtil.getConfig(CONFIG_NAME);
     try {
@@ -75,7 +86,53 @@ function initConfig() {
         vsUtil.error("Check Simple-FTP config file syntax.");
         result = false;
     }
-    return { result: result, json: json };
+    return { "result": result, "json": json };
+}
+
+// Function initializes an array of servers from a string or JSON object
+function loadServerList(source) {
+    var serversConfig = null;
+    if (typeof (source) === "string") { // If the parameter is a string
+        var parsedSource = JSON.parse(source);
+        serversConfig = { "result": parsedSource !== undefined, "json": parsedSource };
+    }
+    else { // If the parameter is a JSON object
+        serversConfig = source;
+    }
+    if (serversConfig.result) {
+        servers = [];
+        serversConfig.json.forEach(function (element) {
+            if (element.type != "sftp") return;
+            var server = { "name": element.name, "configuration": element };
+            servers.push(server);
+        }, this);
+        vsUtil.output(outputChannel, "Loaded " + servers.length + " server(s)");
+    }
+    else {
+        vsUtil.output("Unable to load server list, check Simple-FTP configuration file.");
+        return false;
+    }
+    return true;
+}
+
+// Function checks for ssh utilities
+function checkSSHExecutable() {
+    var checkResult = commandExistsSync('ssh');
+    if (checkResult) {
+        vsUtil.output(outputChannel, "Find ssh on your system.");
+    } else {
+        vsUtil.output(outputChannel, "Did not find ssh on your system.");
+    }
+    vsUtil.output(outputChannel, "If you use a third-party terminal, then make sure that there is an SSH utility.");
+    return checkResult;
+}
+
+// Initialize extension
+function initExtension() {
+    outputChannel = vsUtil.getOutputChannel("ssh-extension");
+    checkSSHExecutable();
+    loadServerList(loadFtpSimpleConfig());
+    return true;
 }
 
 exports.deactivate = deactivate;

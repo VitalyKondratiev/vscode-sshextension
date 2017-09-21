@@ -1,4 +1,4 @@
-# sshextension README
+# About SSHExtension
 
 This extension allows you to open an SSH connection in the integrated terminal.
 The extension was created in order to have access to the SSH in conjunction with the already available access to the FTP.  
@@ -26,11 +26,12 @@ For more information on configuring ftp-simple you can find out the page of [thi
 ## Known Issues
 
 Works only with 'pageant'.
-The list of servers is loaded ONLY during startup VSCode.
 
 ## Roadmap
 
-Add the ability to work with a password or private key.  
+Add the option to customize the extension  
+Add the ability to work with a password.
+Add the ability to work with an external terminal
 
 ## Release Notes
 

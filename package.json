@@ -2,7 +2,7 @@
   "name": "sshextension",
   "displayName": "SSHExtension",
   "description": "Extension for SSH connections using the ftp-simple settings",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "kondratiev",
   "engines": {
     "vscode": "^1.10.0"
@@ -11,10 +11,10 @@
     "Other"
   ],
   "keywords": [
-      "ssh",
-      "remote"
+    "ssh",
+    "remote"
   ],
-  "icon" : "icon.png",
+  "icon": "icon.png",
   "activationEvents": [
     "onCommand:sshextension.openConnection",
     "*"
@@ -35,11 +35,11 @@
     "humy2833.ftp-simple"
   ],
   "repository": {
-      "type": "git",
-      "url": "https://github.com/VitalyKondratiev/SSHExtension.git"
+    "type": "git",
+    "url": "https://github.com/VitalyKondratiev/SSHExtension.git"
   },
   "bugs": {
-      "url": "https://github.com/VitalyKondratiev/SSHExtension/issues"
+    "url": "https://github.com/VitalyKondratiev/SSHExtension/issues"
   },
   "devDependencies": {
     "typescript": "^2.5.2",
@@ -47,9 +47,14 @@
     "mocha": "^3.5.0",
     "eslint": "^4.6.1",
     "@types/node": "^7.0.0",
-    "@types/mocha": "^2.2.42"
+    "@types/mocha": "^2.2.42",
+    "command-exists": "^1.2.2",
+    "easy-loop": "^1.7.2",
+    "filesize": "^3.5.10",
+    "fs-extra": "^4.0.2"
   },
   "dependencies": {
+    "command-exists": "^1.2.2",
     "easy-loop": "^1.7.2",
     "filesize": "^3.5.10",
     "fs-extra": "^4.0.2"
