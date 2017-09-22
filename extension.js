@@ -5,9 +5,13 @@ var vsUtil = require('./lib/vs-util');
 var cryptoUtil = require('./lib/crypto-util');
 var pathUtil = require('./lib/path-util');
 var commandExistsSync = require('command-exists').sync;
+var trueCasePathSync = require('true-case-path');
+var pathIsInside = require("path-is-inside");
 const CONFIG_NAME = "ftp-simple.json";
-var outputChannel = null;
 
+var outputChannel = null;
+var fastOpenConnectionButton = null;
+var fastOpenConnectionServerName = null;
 var servers = [];
 var terminals = [];
 
@@ -30,27 +34,7 @@ function activate(context) {
         }, this);
         // Show Command Palette with server list of servers
         vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
-            if (item === undefined) return;
-            var server = servers.find(function (element, index, array) { return element.name == this }, item);
-            var terminal = terminals.find(function (element, index, array) { return element.name == this }, item);
-            if (terminal === undefined) { // If the terminal does not exist
-                var terminal = vscode.window.createTerminal(item);
-                terminals.push({ "name": item, "terminal": terminal });
-                var sshCommand = null;
-                // Authorization through an agent
-                if (server.configuration.agent !== undefined && server.configuration.agent)
-                    sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username;
-                // Authorization by private key
-                if (server.configuration.privateKey !== undefined && server.configuration.privateKey)
-                    sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username
-                        + ' -i "' + server.configuration.privateKey + '"';
-                if (sshCommand != null)
-                    terminal.sendText(sshCommand);
-            }
-            else { // If the terminal instance was found
-                terminal = terminal.terminal;
-            }
-            terminal.show();
+            openSSHTerminal(item);
         })
     }));
     // Launch reload ftp-simple config if changed
@@ -67,6 +51,23 @@ function activate(context) {
         }, event);
         if (terminal !== undefined)
             terminals.shift(terminal);
+    }));
+    // If the edited file is in the project directory
+    context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(function (event) {
+        var mappedServer = getServerByFilePath(event.document.fileName)
+        // If the server is found then show the button and save the server name
+        if (mappedServer !== undefined) {
+            fastOpenConnectionButton.text = "$(terminal) Open SSH on " + mappedServer.configuration.name;
+            fastOpenConnectionButton.show();
+            fastOpenConnectionServerName = mappedServer.configuration.name;
+        }
+        // Otherwise hide the button
+        else {
+            fastOpenConnectionButton.hide();
+        }
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('sshextension.fastOpenConnection', function (c) {
+        openSSHTerminal(fastOpenConnectionServerName);
     }));
 }
 exports.activate = activate;
@@ -127,11 +128,60 @@ function checkSSHExecutable() {
     return checkResult;
 }
 
+// This method creates a terminal for the server by its name
+function openSSHTerminal(serverName) {
+    if (serverName === undefined) return false;
+    var server = servers.find(function (element, index, array) { return element.name == this }, serverName);
+    var terminal = terminals.find(function (element, index, array) { return element.name == this }, serverName);
+    if (terminal === undefined) { // If the terminal does not exist
+        var terminal = vscode.window.createTerminal(serverName);
+        terminals.push({ "name": serverName, "terminal": terminal });
+        var sshCommand = null;
+        // Authorization through an agent
+        if (server.configuration.agent !== undefined && server.configuration.agent)
+            sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username;
+        // Authorization by private key
+        if (server.configuration.privateKey !== undefined && server.configuration.privateKey)
+            sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username
+                + ' -i "' + server.configuration.privateKey + '"';
+        if (sshCommand != null)
+            terminal.sendText(sshCommand);
+    }
+    else { // If the terminal instance was found
+        terminal = terminal.terminal;
+    }
+    terminal.show();
+    return true;
+}
+
+// This method try to find server with project that contains file
+function getServerByFilePath(filePath){
+    // Get path to edited file with fixed drive letter case
+    var openedFileName = trueCasePathSync(pathUtil.normalize(filePath));
+    openedFileName = openedFileName.replace(/\w:/g, function (g) { return g.toLowerCase() })
+    // Find the server that has the project containing this file
+    var server = servers.find(function (element, index, array) {
+        // If the server does not have any projects, go to the next
+        if (element.configuration.project === undefined) return false;
+        var thisServerMapped = false;
+        Object.keys(element.configuration.project).forEach(function (item) {
+            // Get project path with fixed drive letter case
+            var serverProjectPath = trueCasePathSync(pathUtil.normalize(item));
+            serverProjectPath = item.replace(/\w:/g, function (g) { return g.toLowerCase() })
+            thisServerMapped = pathIsInside(openedFileName, serverProjectPath);
+        }, this);
+        return thisServerMapped;
+    }, openedFileName);
+    return server;
+}
+
 // Initialize extension
 function initExtension() {
     outputChannel = vsUtil.getOutputChannel("ssh-extension");
     checkSSHExecutable();
     loadServerList(loadFtpSimpleConfig());
+    fastOpenConnectionButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    fastOpenConnectionButton.command = "sshextension.fastOpenConnection";
     return true;
 }
 

@@ -3,6 +3,9 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.0.6 (Features)
+- In the status bar, a quick opening button is added to SSH if the open file is in the project that is associated with the server
+
 ## 0.0.5 (Features)
 - Added name for instance of integrated terminal
 - Added check for the existence of the ssh utility on your machine
