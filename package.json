@@ -4,6 +4,7 @@
   "description": "Extension for SSH connections using the ftp-simple settings",
   "version": "0.0.7",
   "publisher": "kondratiev",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.10.0"
   },
@@ -15,6 +16,10 @@
     "remote"
   ],
   "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#DDCC99",
+    "theme": "dark"
+  },
   "activationEvents": [
     "onCommand:sshextension.openConnection",
     "*"
