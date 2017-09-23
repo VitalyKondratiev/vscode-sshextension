@@ -36,7 +36,7 @@ Works only with 'pageant' and ssh private keys.
 
 ## Roadmap
 
-Add the option to customize the extension. 
+Add the option to customize the extension.  
 Add the ability to work with a password.  
 Add the ability to work with an external terminal.
 

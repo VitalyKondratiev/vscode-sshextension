@@ -3,6 +3,10 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.0.7 (Patch)
+- Fixed the appearance of a button for quickly opening SSH when VSCode was first launched and a new project was opened
+- Added log entries for creating and killing terminals
+
 ## 0.0.6 (Features)
 - In the status bar, a quick opening button is added to SSH if the open file is in the project that is associated with the server
 
