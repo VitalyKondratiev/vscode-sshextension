@@ -14,11 +14,21 @@ The connection opens in a new instance of the integrated terminal.
 
 ## How to use
 
-Open the Command Palette (usually `F1` or `Ctrl+Shift+P`). 
-Select the command `Open SSH Connection`.
-Select a server from the list.  
-  
-To add a server, see the ftp-simple configuration file.
+### Open terminal from server list
+Open the Command Palette (usually `F1` or `Ctrl+Shift+P`).  
+Select the command `Open SSH Connection`.  
+Select a server from the list.
+
+![Demo Open connection from list](./images/open_connection_from_list.gif)
+
+### Fast open terminal
+- Open workspace with project mapped to server
+- Open any project file or go to already opened editor tab  
+- Click on "Open SSH on \<servername>" button
+
+![Demo Open connection from list](./images/open_fast_connection.gif)
+
+To add a server, see the [ftp-simple configuration file](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple#user-content-config-setting-example).
 
 ## Requirements
 
@@ -30,15 +40,12 @@ You should still have an ssh agent, not necessarily that it is available in the 
 
 For more information on configuring ftp-simple you can find out the page of [this extension](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple#user-content-config-setting-example).
 
-## Known Issues
-
-Works only with 'pageant' and ssh private keys.
-
 ## Roadmap
 
 Add the option to customize the extension.  
-Add the ability to work with a password.  
-Add the ability to work with an external terminal.
+Add the ability to work with an external terminal.  
+Open SSH connections in Putty  
+And a few more ~~secret (before their release)~~ features... )
 
 ## Feedback
 

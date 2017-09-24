@@ -127,27 +127,47 @@ function openSSHTerminal(serverName) {
         return element.name == this
     }, serverName);
     var terminalIsNew = true;
+    var hasErrors = false;
     if (terminal === undefined) { // If the terminal does not exist
-        var terminal = vscode.window.createTerminal(serverName);
-        terminals.push({ "name": serverName, "host": server.configuration.host, "terminal": terminal });
-        var sshCommand = null;
+        vsUtil.output(outputChannel, "New terminal session initialization for '" + server.configuration.host + "'...");
+        if (server.configuration.host === undefined || server.configuration.username === undefined) {
+            vsUtil.output(outputChannel, "Check host or username for '" + server.configuration.host + "'");
+            hasErrors = true;
+        }
+        var sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username;
+        var sshAuthorizationMethod = "byPass";
         // Authorization through an agent
         if (server.configuration.agent !== undefined && server.configuration.agent)
-            sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username;
+            sshAuthorizationMethod = "agent";
         // Authorization by private key
-        if (server.configuration.privateKey !== undefined && server.configuration.privateKey)
-            sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username
-                + ' -i "' + server.configuration.privateKey + '"';
-        if (sshCommand != null)
+        if (server.configuration.privateKey !== undefined && server.configuration.privateKey) {
+            sshCommand += ' -i "' + server.configuration.privateKey + '"';
+            sshAuthorizationMethod = "byPrivateKey";
+        }
+        if (!hasErrors) {
+            terminal = vscode.window.createTerminal(serverName);
+            terminals.push({ "name": serverName, "host": server.configuration.host, "terminal": terminal });
             terminal.sendText(sshCommand);
+            if (sshAuthorizationMethod == "byPass") {
+                terminal.sendText(server.configuration.password);
+            }
+        }
     }
     else { // If the terminal instance was found
         terminal = terminal.terminal;
         terminalIsNew = false;
     }
-    terminal.show();
-    vsUtil.output(outputChannel, "A terminal with a session for '" + server.configuration.host + "' has been " + ((terminalIsNew) ? "created and displayed" : "displayed."));
-    return true;
+    if (!hasErrors) {
+        terminal.show();
+        vsUtil.output(outputChannel, "A terminal with a session for '" + server.configuration.host + "' has been " + ((terminalIsNew) ? "created and displayed" : "displayed."));
+    }
+    else {
+        vsUtil.output(outputChannel, "A terminal with a session for '" + server.configuration.host + "' has been not started, because errors were found.");
+        vsUtil.error("Terminal has been not started, check output for more info.", "Check output", function () {
+            outputChannel.show();
+        });
+    }
+    return hasErrors;
 }
 
 // This method try to find server with project that contains file
