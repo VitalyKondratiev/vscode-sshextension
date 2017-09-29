@@ -2,7 +2,7 @@
   "name": "sshextension",
   "displayName": "SSHExtension",
   "description": "Extension for SSH connections using the ftp-simple settings",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "kondratiev",
   "license": "MIT",
   "engines": {
@@ -18,7 +18,7 @@
   "icon": "icon.png",
   "galleryBanner": {
     "color": "#DDCC99",
-    "theme": "dark"
+    "theme": "light"
   },
   "activationEvents": [
     "onCommand:sshextension.openConnection",
@@ -63,7 +63,7 @@
     "easy-loop": "^1.7.2",
     "filesize": "^3.5.10",
     "fs-extra": "^4.0.2",
-    "true-case-path": "^1.0.2",
-    "path-is-inside": "^1.0.2"
+    "is-path-inside": "^1.0.0",
+    "upath": "^1.0.0"
   }
 }

@@ -3,10 +3,9 @@
 var vscode = require('vscode');
 var vsUtil = require('./lib/vs-util');
 var cryptoUtil = require('./lib/crypto-util');
-var pathUtil = require('./lib/path-util');
 var commandExistsSync = require('command-exists').sync;
-var trueCasePathSync = require('true-case-path');
-var pathIsInside = require("path-is-inside");
+var upath = require("upath");
+var isPathInside = require('is-path-inside');
 const CONFIG_NAME = "ftp-simple.json";
 
 var outputChannel = null;
@@ -39,8 +38,8 @@ function activate(context) {
     }));
     // Launch reload ftp-simple config if changed
     context.subscriptions.push(vscode.workspace.onWillSaveTextDocument(function (event) {
-        var remoteTempPath = pathUtil.normalize(event.document.fileName);
-        var configTempPath = pathUtil.normalize(vsUtil.getConfigPath() + 'ftp-simple-temp.json');
+        var remoteTempPath = upath.normalize(event.document.fileName);
+        var configTempPath = upath.normalize(vsUtil.getConfigPath() + 'ftp-simple-temp.json');
         if (configTempPath != remoteTempPath) return;
         loadServerList(event.document.getText());
     }));
@@ -173,7 +172,7 @@ function openSSHTerminal(serverName) {
 // This method try to find server with project that contains file
 function getServerByFilePath(filePath) {
     // Get path to edited file with fixed drive letter case
-    var openedFileName = trueCasePathSync(pathUtil.normalize(filePath));
+    var openedFileName = upath.normalize(filePath);
     openedFileName = openedFileName.replace(/\w:/g, function (g) { return g.toLowerCase() })
     // Find the server that has the project containing this file
     var server = servers.find(function (element, index, array) {
@@ -182,9 +181,9 @@ function getServerByFilePath(filePath) {
         var thisServerMapped = false;
         Object.keys(element.configuration.project).forEach(function (item) {
             // Get project path with fixed drive letter case
-            var serverProjectPath = trueCasePathSync(pathUtil.normalize(item));
-            serverProjectPath = item.replace(/\w:/g, function (g) { return g.toLowerCase() })
-            thisServerMapped = pathIsInside(openedFileName, serverProjectPath);
+            var serverProjectPath = upath.normalize(item);
+            serverProjectPath = item.replace(/\w:/g, function (g) { return g.toLowerCase() });
+            thisServerMapped = isPathInside(openedFileName, serverProjectPath);
         }, this);
         return thisServerMapped;
     }, openedFileName);

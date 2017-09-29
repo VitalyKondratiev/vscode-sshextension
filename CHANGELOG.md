@@ -3,6 +3,10 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.1.1 (Patch)
+- Fixed button for quickly opening SSH on Windows, if project path been defined as Unix-path
+- Removed/replaced some Node.js modules, used in extension
+
 ## 0.1.0 (Features)
 - Added log entries for config errors on terminal creating
 - Added the ability to work with a password from configuration file
