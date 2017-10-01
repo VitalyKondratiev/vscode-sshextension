@@ -1,5 +1,7 @@
 # About SSHExtension
 
+[![Join the chat at https://gitter.im/Vitalykondratiev/vscode-sshextension](https://badges.gitter.im/Vitalykondratiev/vscode-sshextension.svg)](https://gitter.im/Vitalykondratiev/vscode-sshextension?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Latest Release](https://vsmarketplacebadge.apphb.com/version/kondratiev.sshextension.svg)](https://marketplace.visualstudio.com/items?itemName=kondratiev.sshextension)
 [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/kondratiev.sshextension.svg)](https://marketplace.visualstudio.com/items?itemName=kondratiev.sshextension)
 
