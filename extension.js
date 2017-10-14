@@ -134,6 +134,9 @@ function openSSHTerminal(serverName) {
             hasErrors = true;
         }
         var sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username;
+        // Add port if different from default port
+        if (server.configuration.port !== undefined && server.configuration.port && server.configuration.port !== 22)
+            sshCommand += ' -p ' + server.configuration.port;
         var sshAuthorizationMethod = "byPass";
         // Authorization through an agent
         if (server.configuration.agent !== undefined && server.configuration.agent)
