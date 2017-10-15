@@ -11,6 +11,7 @@ const CONFIG_NAME = "ftp-simple.json";
 var outputChannel = null;
 var fastOpenConnectionButton = null;
 var fastOpenConnectionServerName = null;
+var fastOpenConnectionProjectPath = null;
 var servers = [];
 var terminals = [];
 
@@ -153,6 +154,15 @@ function openSSHTerminal(serverName) {
             if (sshAuthorizationMethod == "byPass") {
                 terminal.sendText(server.configuration.password);
             }
+            if (vscode.workspace.getConfiguration('sshextension').openProjectCatalog) {
+                terminal.sendText("cd " + fastOpenConnectionProjectPath)
+            }
+            // If custom commands defined send it to terminal
+            if (vscode.workspace.getConfiguration('sshextension').customCommands.length) {
+                vscode.workspace.getConfiguration('sshextension').customCommands.forEach(function(command) {
+                    terminal.sendText(command);
+                }, this);
+            }
         }
     }
     else { // If the terminal instance was found
@@ -173,7 +183,8 @@ function openSSHTerminal(serverName) {
 }
 
 // This method try to find server with project that contains file
-function getServerByFilePath(filePath) {
+function getProjectByFilePath(filePath) {
+    var projectPath = null;
     // Get path to edited file with fixed drive letter case
     var openedFileName = upath.normalize(filePath);
     openedFileName = openedFileName.replace(/\w:/g, function (g) { return g.toLowerCase() })
@@ -187,16 +198,22 @@ function getServerByFilePath(filePath) {
             var serverProjectPath = upath.normalize(item);
             serverProjectPath = item.replace(/\w:/g, function (g) { return g.toLowerCase() });
             thisServerMapped = isPathInside(openedFileName, serverProjectPath);
+            if (thisServerMapped) {
+                projectPath = element.configuration.project[item];
+            }
         }, this);
         return thisServerMapped;
     }, openedFileName);
-    return server;
+    return { "server" : server, "projectPath" : projectPath };
 }
 
 function manageFastOpenConnectionButtonState() {
     var mappedServer = undefined;
-    if (vscode.window.activeTextEditor != undefined)
-        mappedServer = getServerByFilePath(vscode.window.activeTextEditor.document.fileName)
+    if (vscode.window.activeTextEditor != undefined) {
+        var project = getProjectByFilePath(vscode.window.activeTextEditor.document.fileName);
+        fastOpenConnectionProjectPath = project.projectPath;
+        mappedServer = project.server;
+    }
     // If the server is found then show the button and save the server name
     if (mappedServer !== undefined) {
         fastOpenConnectionButton.text = "$(terminal) Open SSH on " + mappedServer.configuration.name;

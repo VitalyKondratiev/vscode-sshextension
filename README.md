@@ -38,9 +38,41 @@ The work requires an extension [ftp-simple](https://marketplace.visualstudio.com
   
 You should still have an ssh agent, not necessarily that it is available in the entire system. it is important that it is accessible from the integrated VSCode terminal.
 
-## Extension Settings
+## Settings (for servers)
 
 For more information on configuring ftp-simple you can find out the page of [this extension](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple#user-content-config-setting-example).
+
+## Extension settings
+
+#### sshextension.customCommands
+
+  * Type: `Array`
+  * Defaut: `[]`
+
+Specifies custom commands which will execute on session start.  
+For example:
+```json
+{
+  "sshextension.customCommands": [
+    "pwd",
+    "ls"
+  ]
+}
+```
+![Demo Custom commands](./images/custom_commands.gif)
+
+#### sshextension.openProjectCatalog
+
+  * Type: `Boolean`
+  * Defaut: `false`
+
+Open the project directory from ftp-simple config, if it exists, after starting the SSH session started with the button in status bar.  
+For example:
+```json
+{
+  "sshextension.openProjectCatalog": true
+}
+```
 
 ## Roadmap
 
@@ -48,6 +80,11 @@ Add the option to customize the extension.
 Add the ability to work with an external terminal.  
 Open SSH connections in Putty  
 And a few more ~~secret (before their release)~~ features... )
+
+## Special thanks
+
+[eduardbadillo](https://github.com/eduardbadillo)  
+Added ability to use different port in ssh connections *([pull request](https://github.com/VitalyKondratiev/vscode-sshextension/pull/3) merged in version 0.1.2)*
 
 ## Feedback
 

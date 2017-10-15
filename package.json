@@ -2,7 +2,7 @@
   "name": "sshextension",
   "displayName": "SSHExtension",
   "description": "Extension for SSH connections using the ftp-simple settings",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "kondratiev",
   "license": "MIT",
   "engines": {
@@ -31,7 +31,28 @@
         "command": "sshextension.openConnection",
         "title": "Open SSH Connection"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "SSHExtension configuration",
+      "properties": {
+        "sshextension.customCommands": {
+          "type": [
+            "array"
+          ],
+          "items": {
+            "type": "string"
+           },
+          "default": [],
+          "description": "Specifies custom commands which will execute on session start"
+        },
+        "sshextension.openProjectCatalog": {
+          "type": "boolean",
+          "default": false,
+          "description": "Open the project directory from the ftp-simple config, if it exists, after starting the SSH session started with the button in status bar"
+        }
+      }
+    }
   },
   "scripts": {
     "postinstall": "node ./node_modules/vscode/bin/install"

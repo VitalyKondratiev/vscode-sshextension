@@ -3,6 +3,12 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+# 0.1.2 (Features)
+- Added the ability to use different port in ssh connections (thx [eduardbadillo](https://github.com/eduardbadillo))
+- Added user configuration options for extension
+- Added the ability to open project directory after SSH session start (option)
+- Added the ability to launch commands after SSH session start (option)
+
 ## 0.1.1 (Patch)
 - Fixed button for quickly opening SSH on Windows, if project path been defined as Unix-path
 - Removed/replaced some Node.js modules, used in extension
