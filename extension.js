@@ -34,9 +34,53 @@ function activate(context) {
         }, this);
         // Show Command Palette with server list of servers
         vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
-            openSSHTerminal(item);
+            openSSHTerminal(item, false);
         })
     }));
+
+    // Command palette 'SSH Port Forwarding'
+    context.subscriptions.push(vscode.commands.registerCommand('sshextension.portForwarding', function () {
+        if (!servers.length) {
+            vscode.window.showInformationMessage("You don't have any servers");
+            return;
+        }
+        // Create list of server names
+        var names = [];
+        servers.forEach(function (element) {
+            names.push(element.name);
+        }, this);
+        var types = {
+            'Local to remote': {
+                'firstAdressPrompt': "Type local address/port (e. g. localhost:9000 or 9000)",
+                'secondAddressPrompt': "Type remote address (e. g. localhost:9000 or 9000)",
+            },
+            'Remote to local': {
+                'firstAdressPrompt': "Type remote address/port (e. g. localhost:9000 or 9000)",
+                'secondAddressPrompt': "Type local address (e. g. localhost:9000 or 9000)",
+            },
+            'SOCKS': {
+                'firstAdressPrompt': "Type address for SOCKS (e. g. localhost:9000)"
+            }
+        }
+        // Show Command Palette with server list of servers
+        vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
+            // Show select of types
+            vsUtil.pick(['Local to remote', 'Remote to local', 'SOCKS'], 'Select forwarding type...').then(function (type) {
+                // Show input for address
+                vsUtil.input({"validateInput": validateHostPort, "prompt": types[type].firstAdressPrompt, "ignoreFocusOut" : true}).then(function (host) {
+                    // Show input for port
+                    vsUtil.input({"validateInput": validateHostPort, "prompt": types[type].secondAddressPrompt, "ignoreFocusOut" : true}).then(function (port) {
+                        var option =  (type == 'Local to remote') ? "-L" : "-R";
+                        if (host.length) {
+                            host += ":"
+                        } 
+                        console.log(item + type + host + port);
+                    });
+                });
+            });
+        })
+    }));
+
     // Launch reload ftp-simple config if changed
     context.subscriptions.push(vscode.workspace.onWillSaveTextDocument(function (event) {
         var remoteTempPath = upath.normalize(event.document.fileName);
@@ -58,13 +102,19 @@ function activate(context) {
         manageFastOpenConnectionButtonState();
     }));
     context.subscriptions.push(vscode.commands.registerCommand('sshextension.fastOpenConnection', function (c) {
-        openSSHTerminal(fastOpenConnectionServerName);
+        openSSHTerminal(fastOpenConnectionServerName, true);
     }));
 }
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
 function deactivate() {
+}
+
+function validateHostPort(port){
+    var portIsInteger = /^\+?(0|[1-9]\d*)$/.test(port);
+    var portIsValid = portIsInteger && (parseInt(port) < 65536);
+    return (portIsValid) ? null : "Please enter a positive integer (in range 0 - 65535)";
 }
 
 // Loads an object that contains a list of servers in JSON format
@@ -120,7 +170,7 @@ function checkSSHExecutable() {
 }
 
 // This method creates a terminal for the server by its name
-function openSSHTerminal(serverName) {
+function openSSHTerminal(serverName, isFastConnection) {
     if (serverName === undefined) return false;
     var server = servers.find(function (element, index, array) { return element.name == this }, serverName);
     var terminal = terminals.find(function (element, index, array) {
@@ -154,7 +204,7 @@ function openSSHTerminal(serverName) {
             if (sshAuthorizationMethod == "byPass") {
                 terminal.sendText(server.configuration.password);
             }
-            if (vscode.workspace.getConfiguration('sshextension').openProjectCatalog) {
+            if (vscode.workspace.getConfiguration('sshextension').openProjectCatalog && isFastConnection) {
                 terminal.sendText("cd " + fastOpenConnectionProjectPath)
             }
             // If custom commands defined send it to terminal

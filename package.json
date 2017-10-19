@@ -22,6 +22,7 @@
   },
   "activationEvents": [
     "onCommand:sshextension.openConnection",
+    "onCommand:sshextension.portForwarding",
     "*"
   ],
   "main": "./extension",
@@ -29,7 +30,13 @@
     "commands": [
       {
         "command": "sshextension.openConnection",
-        "title": "Open SSH Connection"
+        "title": "Open SSH Connection",
+        "category": "SSHExtension"
+      },
+      {
+        "command": "sshextension.portForwarding",
+        "title": "SSH Port Forwarding",
+        "category": "SSHExtension"
       }
     ],
     "configuration": {
