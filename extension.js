@@ -34,7 +34,7 @@ function activate(context) {
         }, this);
         // Show Command Palette with server list of servers
         vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
-            openSSHTerminal(item, false);
+            openSSHConnection(item, false);
         })
     }));
 
@@ -49,59 +49,9 @@ function activate(context) {
         servers.forEach(function (element) {
             names.push(element.name);
         }, this);
-        var types = {
-            'Local to remote': {
-                'firstAdressPrompt': "Type local address/port (e. g. localhost:9000 or 9000)",
-                'secondAddressPrompt': "Type remote address (e. g. localhost:9000)",
-                "firstDomainReq": false,
-                'secondDomainReq': true,
-                "option": "-L"
-            },
-            'Remote to local': {
-                'firstAdressPrompt': "Type remote address/port (e. g. localhost:9000 or 9000)",
-                'secondAddressPrompt': "Type local address (e. g. localhost:9000)",
-                "firstDomainReq": false,
-                'secondDomainReq': true,
-                "option": "-R"
-            },
-            'SOCKS': {
-                'firstAdressPrompt': "Type address for SOCKS (e. g. localhost:9000)",
-                "firstDomainReq": true,
-                "option": "-D"
-            }
-        }
-        function createTunnel(option, firstAddress, secondAddress = null) {
-            var command = "ssh " + option + " " + firstAddress;
-            if (secondAddress != null)
-                command += ":" + secondAddress;
-            console.log(command);
-        }
         // Show Command Palette with server list of servers
         vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
-            
-            // Show select of types
-            vsUtil.pick(['Local to remote', 'Remote to local', 'SOCKS'], 'Select forwarding type...').then(function (type) {
-                if (type === undefined) return;
-                // Show input for first address
-                vsUtil.input({"validateInput": (s) => {
-                    return validateHostPort(s, types[type].firstDomainReq)
-                },"prompt": types[type].firstAdressPrompt, "ignoreFocusOut" : true}).then(function (firstAddress) {
-                    if (firstAddress === undefined || !firstAddress.length) return;
-                    
-                    if (type != "SOCKS"){
-                        // Show input for second address
-                        vsUtil.input({"validateInput": (s) => {
-                            return validateHostPort(s, types[type].secondDomainReq)
-                        }, "prompt": types[type].secondAddressPrompt, "ignoreFocusOut" : true}).then(function (secondAddress) {
-                            if (secondAddress === undefined || !secondAddress.length) return;
-                            createTunnel(types[type].option, firstAddress, secondAddress);
-                        });
-                    }
-                    else {
-                        createTunnel(types[type].option, firstAddress);
-                    }
-                });
-            });
+            createForwarding(item);
         })
     }));
 
@@ -126,19 +76,13 @@ function activate(context) {
         manageFastOpenConnectionButtonState();
     }));
     context.subscriptions.push(vscode.commands.registerCommand('sshextension.fastOpenConnection', function (c) {
-        openSSHTerminal(fastOpenConnectionServerName, true);
+        openSSHConnection(fastOpenConnectionServerName, true);
     }));
 }
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
 function deactivate() {
-}
-
-function validateHostPort(port, domainReq = false){
-    var portRegex = /^(?:(?:\S^|[^:])+:{1})?([1-5]?\d{0,4}|6[1-4][1-9]{3}|65[1-4][1-9]{2}|655[1-2]\d)$/;
-    if (domainReq) portRegex = /^(?:(?:\S^|[^:])+:{1}){1}([1-5]?\d{0,4}|6[1-4][1-9]{3}|65[1-4][1-9]{2}|655[1-2]\d)$/;
-    return (portRegex.test(port)) ? null : "Please enter a domain " + (!domainReq ? "(optional)  ": "") + "and port in range 0 - 65535 (e. g. localhost:9000" + (!domainReq ? " or 9000": "")+ ")";
 }
 
 // Loads an object that contains a list of servers in JSON format
@@ -194,12 +138,12 @@ function checkSSHExecutable() {
 }
 
 // This method creates a terminal for the server by its name
-function openSSHTerminal(serverName, isFastConnection) {
+function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) {
     if (serverName === undefined) return false;
     var server = servers.find(function (element, index, array) { return element.name == this }, serverName);
     var terminal = terminals.find(function (element, index, array) {
-        return element.name == this
-    }, serverName);
+        return element.name == this.terminalName && element.isForwarding == this.isForwarding
+    }, {"terminalName" : serverName, "isForwarding": (forwardingArgs != null)});
     var terminalIsNew = true;
     var hasErrors = false;
     if (terminal === undefined) { // If the terminal does not exist
@@ -208,7 +152,7 @@ function openSSHTerminal(serverName, isFastConnection) {
             vsUtil.output(outputChannel, "Check host or username for '" + server.configuration.host + "'");
             hasErrors = true;
         }
-        var sshCommand = 'ssh ' + server.configuration.host + ' -l ' + server.configuration.username;
+        var sshCommand = 'ssh ' + ((forwardingArgs != null) ? forwardingArgs + " " : "") + server.configuration.host + ' -l ' + server.configuration.username;
         // Add port if different from default port
         if (server.configuration.port !== undefined && server.configuration.port && server.configuration.port !== 22)
             sshCommand += ' -p ' + server.configuration.port;
@@ -222,8 +166,8 @@ function openSSHTerminal(serverName, isFastConnection) {
             sshAuthorizationMethod = "byPrivateKey";
         }
         if (!hasErrors) {
-            terminal = vscode.window.createTerminal(serverName);
-            terminals.push({ "name": serverName, "host": server.configuration.host, "terminal": terminal });
+            terminal = vscode.window.createTerminal(serverName + ((forwardingArgs != null) ? " (Forwarding)" : ""));
+            terminals.push({ "name": serverName, "host": server.configuration.host, "terminal": terminal, "isForwarding": (forwardingArgs != null) });
             terminal.sendText(sshCommand);
             if (sshAuthorizationMethod == "byPass") {
                 terminal.sendText(server.configuration.password);
@@ -254,6 +198,89 @@ function openSSHTerminal(serverName, isFastConnection) {
         });
     }
     return hasErrors;
+}
+
+function createForwarding(serverName){
+    function validateHostPort(port, domainReq = false){
+        var portRegex = /^(?:(?:\S^|[^:])+:{1})?(?:[0-5]?\d{1,4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2]\d|6553[0-6]){1}$/;
+        if (domainReq) portRegex = /^(?:(?:\S^|[^:])+:{1}){1}(?:[0-5]?\d{1,4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2]\d|6553[0-6]){1}$/;
+        return (portRegex.test(port)) ? null : "Please enter a domain " + (!domainReq ? "(optional)  ": "") + "and port in range 0 - 65535 (e. g. localhost:9000" + (!domainReq ? " or 9000": "")+ ")";
+    }
+    function createForwardingArgs(option, firstAddress, secondAddress = null) {
+        var forwardingArgs = option + " " + firstAddress;
+        if (secondAddress != null)
+            forwardingArgs += ":" + secondAddress;
+        return forwardingArgs;
+    }
+    function toRecentlyUsed(recentlyUsedForwardings, forwardingArgs){
+        if (recentlyUsedForwardings.indexOf(forwardingArgs) == -1) {
+            vsUtil.msg("Want to save this forwarding in recently used?", "Yes").then(function(button){
+                if (button == "Yes"){
+                    recentlyUsedForwardings.push(forwardingArgs);
+                    vscode.workspace.getConfiguration("sshextension").update("recentlyUsedForwardings", recentlyUsedForwardings, true)
+                }
+            });
+        }
+    }
+    var types = {
+        'Local to remote': {
+            'firstAdressPrompt': "Type local address/port (e. g. localhost:9000 or 9000)",
+            'secondAddressPrompt': "Type remote address (e. g. localhost:9000)",
+            "firstDomainReq": false,
+            'secondDomainReq': true,
+            "option": "-L"
+        },
+        'Remote to local': {
+            'firstAdressPrompt': "Type remote address/port (e. g. localhost:9000 or 9000)",
+            'secondAddressPrompt': "Type local address (e. g. localhost:9000)",
+            "firstDomainReq": false,
+            'secondDomainReq': true,
+            "option": "-R"
+        },
+        'SOCKS': {
+            'firstAdressPrompt': "Type address for SOCKS (e. g. localhost:9000)",
+            "firstDomainReq": true,
+            "option": "-D"
+        }
+    }
+    var recentlyUsedForwardings = vscode.workspace.getConfiguration("sshextension").recentlyUsedForwardings;
+    if (recentlyUsedForwardings.length) {
+        types['Recently used'] = {};
+    }
+    // Show select of types
+    vsUtil.pick(Object.keys(types), 'Select forwarding type...').then(function (type) {
+        if (type === undefined) return;
+        // Show input for first address
+        if (type != "Recently used"){
+            vsUtil.input({"validateInput": (s) => {
+                return validateHostPort(s, types[type].firstDomainReq)
+            },"prompt": types[type].firstAdressPrompt, "ignoreFocusOut" : true}).then(function (firstAddress) {
+                if (firstAddress === undefined || !firstAddress.length) return;
+                if (type != "SOCKS"){
+                    // Show input for second address
+                    vsUtil.input({"validateInput": (s) => {
+                        return validateHostPort(s, types[type].secondDomainReq)
+                    }, "prompt": types[type].secondAddressPrompt, "ignoreFocusOut" : true}).then(function (secondAddress) {
+                        if (secondAddress === undefined || !secondAddress.length) return;
+                        var forwardingArgs =  createForwardingArgs(types[type].option, firstAddress, secondAddress);
+                        openSSHConnection(serverName, false, forwardingArgs);
+                        toRecentlyUsed(recentlyUsedForwardings, forwardingArgs);
+                    });
+                }
+                else {
+                    var forwardingArgs = createForwardingArgs(types[type].option, firstAddress);
+                    openSSHConnection(serverName, false, forwardingArgs);
+                    toRecentlyUsed(recentlyUsedForwardings, forwardingArgs);
+                }
+            });
+        }
+        else {
+            vsUtil.pick(recentlyUsedForwardings, 'Select forwarding arguments from recently used...').then(function (forwardingArgs) {
+                if (forwardingArgs) return;
+                openSSHConnection(serverName, false, forwardingArgs);
+            });
+        }
+    });
 }
 
 // This method try to find server with project that contains file

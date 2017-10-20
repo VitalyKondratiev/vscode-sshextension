@@ -53,6 +53,16 @@
           "default": [],
           "description": "Specifies custom commands which will execute on session start"
         },
+        "sshextension.recentlyUsedForwardings":  {
+          "type": [
+            "array"
+          ],
+          "items": {
+            "type": "string"
+           },
+          "default": [],
+          "description": "You can save the arguments for port forwarding, which you often use"
+        },
         "sshextension.openProjectCatalog": {
           "type": "boolean",
           "default": false,
