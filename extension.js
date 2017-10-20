@@ -52,30 +52,54 @@ function activate(context) {
         var types = {
             'Local to remote': {
                 'firstAdressPrompt': "Type local address/port (e. g. localhost:9000 or 9000)",
-                'secondAddressPrompt': "Type remote address (e. g. localhost:9000 or 9000)",
+                'secondAddressPrompt': "Type remote address (e. g. localhost:9000)",
+                "firstDomainReq": false,
+                'secondDomainReq': true,
+                "option": "-L"
             },
             'Remote to local': {
                 'firstAdressPrompt': "Type remote address/port (e. g. localhost:9000 or 9000)",
-                'secondAddressPrompt': "Type local address (e. g. localhost:9000 or 9000)",
+                'secondAddressPrompt': "Type local address (e. g. localhost:9000)",
+                "firstDomainReq": false,
+                'secondDomainReq': true,
+                "option": "-R"
             },
             'SOCKS': {
-                'firstAdressPrompt': "Type address for SOCKS (e. g. localhost:9000)"
+                'firstAdressPrompt': "Type address for SOCKS (e. g. localhost:9000)",
+                "firstDomainReq": true,
+                "option": "-D"
             }
+        }
+        function createTunnel(option, firstAddress, secondAddress = null) {
+            var command = "ssh " + option + " " + firstAddress;
+            if (secondAddress != null)
+                command += ":" + secondAddress;
+            console.log(command);
         }
         // Show Command Palette with server list of servers
         vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
+            
             // Show select of types
             vsUtil.pick(['Local to remote', 'Remote to local', 'SOCKS'], 'Select forwarding type...').then(function (type) {
-                // Show input for address
-                vsUtil.input({"validateInput": validateHostPort, "prompt": types[type].firstAdressPrompt, "ignoreFocusOut" : true}).then(function (host) {
-                    // Show input for port
-                    vsUtil.input({"validateInput": validateHostPort, "prompt": types[type].secondAddressPrompt, "ignoreFocusOut" : true}).then(function (port) {
-                        var option =  (type == 'Local to remote') ? "-L" : "-R";
-                        if (host.length) {
-                            host += ":"
-                        } 
-                        console.log(item + type + host + port);
-                    });
+                if (type === undefined) return;
+                // Show input for first address
+                vsUtil.input({"validateInput": (s) => {
+                    return validateHostPort(s, types[type].firstDomainReq)
+                },"prompt": types[type].firstAdressPrompt, "ignoreFocusOut" : true}).then(function (firstAddress) {
+                    if (firstAddress === undefined || !firstAddress.length) return;
+                    
+                    if (type != "SOCKS"){
+                        // Show input for second address
+                        vsUtil.input({"validateInput": (s) => {
+                            return validateHostPort(s, types[type].secondDomainReq)
+                        }, "prompt": types[type].secondAddressPrompt, "ignoreFocusOut" : true}).then(function (secondAddress) {
+                            if (secondAddress === undefined || !secondAddress.length) return;
+                            createTunnel(types[type].option, firstAddress, secondAddress);
+                        });
+                    }
+                    else {
+                        createTunnel(types[type].option, firstAddress);
+                    }
                 });
             });
         })
@@ -111,10 +135,10 @@ exports.activate = activate;
 function deactivate() {
 }
 
-function validateHostPort(port){
-    var portIsInteger = /^\+?(0|[1-9]\d*)$/.test(port);
-    var portIsValid = portIsInteger && (parseInt(port) < 65536);
-    return (portIsValid) ? null : "Please enter a positive integer (in range 0 - 65535)";
+function validateHostPort(port, domainReq = false){
+    var portRegex = /^(?:(?:\S^|[^:])+:{1})?([1-5]?\d{0,4}|6[1-4][1-9]{3}|65[1-4][1-9]{2}|655[1-2]\d)$/;
+    if (domainReq) portRegex = /^(?:(?:\S^|[^:])+:{1}){1}([1-5]?\d{0,4}|6[1-4][1-9]{3}|65[1-4][1-9]{2}|655[1-2]\d)$/;
+    return (portRegex.test(port)) ? null : "Please enter a domain " + (!domainReq ? "(optional)  ": "") + "and port in range 0 - 65535 (e. g. localhost:9000" + (!domainReq ? " or 9000": "")+ ")";
 }
 
 // Loads an object that contains a list of servers in JSON format
