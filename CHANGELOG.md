@@ -3,6 +3,11 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+# 0.2.0 (Features)
+- Added feature for SSH port forwarding
+- Fix configuration key - "sshextension.openProjectCatalog", if set to true, on opening connection from command palette, after ssh opened connecton executes "cd null" command
+- 
+
 # 0.1.2 (Features)
 - Added the ability to use different port in ssh connections (thx [eduardbadillo](https://github.com/eduardbadillo))
 - Added user configuration options for extension

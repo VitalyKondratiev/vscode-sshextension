@@ -12,14 +12,15 @@ For the server list, the extension configuration file ftp-simple is used.
 ## Features
 
 Uses a ready-made server configuration file.  
-The connection opens in a new instance of the integrated terminal.
+The connection opens in a new instance of the integrated terminal.  
+SSH port forwarding.
 
 ## How to use
 
 ### Open terminal from server list
-Open the Command Palette (usually `F1` or `Ctrl+Shift+P`).  
-Select the command `Open SSH Connection`.  
-Select a server from the list.
+- Open the Command Palette (usually `F1` or `Ctrl+Shift+P`).  
+- Select the command `SSHExtension: Open SSH Connection`.  
+- Select a server from the list.
 
 ![Demo Open connection from list](./images/open_connection_from_list.gif)
 
@@ -29,6 +30,15 @@ Select a server from the list.
 - Click on "Open SSH on \<servername>" button
 
 ![Demo Open connection from list](./images/open_fast_connection.gif)
+
+### SSH port forwarding
+- Open the Command Palette (usually `F1` or `Ctrl+Shift+P`).  
+- Select the command `SSHExtension: SSH Port Forwarding`.  
+- Select a forwarding type from: `Local to remote` (-L), `Local to remote` (-R), `SOCKS` (-D), `Recently used` (if exists saved arguments).  
+- Enter the required parameters on request  
+- (Optionally) You can save your selections for faster port forwarding in the future
+
+![Demo Open connection from list](./images/port_forwarding.gif)
 
 To add a server, see the [ftp-simple configuration file](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple#user-content-config-setting-example).
 
@@ -66,7 +76,7 @@ For example:
   * Type: `Boolean`
   * Defaut: `false`
 
-Open the project directory from ftp-simple config, if it exists, after starting the SSH session started with the button in status bar.  
+Open the project directory from the ftp-simple config, if it exists, after starting the SSH session.  
 For example:
 ```json
 {
@@ -74,12 +84,26 @@ For example:
 }
 ```
 
+#### sshextension.recentlyUsedForwardings
+
+  * Type: `Array`
+  * Defaut: `[]`
+
+In this place stored all saved port forwarding args. You can save the arguments for port forwarding, which you often use.  
+For example:
+```json
+{
+  "sshextension.recentlyUsedForwardings": [
+    "-R 9000:localhost:9000"
+  ]
+}
+```
+
 ## Roadmap
 
-Add the option to customize the extension.  
 Add the ability to work with an external terminal.  
-Open SSH connections in Putty  
-And a few more ~~secret (before their release)~~ features... )
+Open SSH connections in Putty.  
+And a few more ~~secret (before their release)~~ features... ).
 
 ## Special thanks
 

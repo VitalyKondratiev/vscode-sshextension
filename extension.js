@@ -172,8 +172,12 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
             if (sshAuthorizationMethod == "byPass") {
                 terminal.sendText(server.configuration.password);
             }
-            if (vscode.workspace.getConfiguration('sshextension').openProjectCatalog && isFastConnection) {
-                terminal.sendText("cd " + fastOpenConnectionProjectPath)
+            if (vscode.workspace.getConfiguration('sshextension').openProjectCatalog) {
+                if (isFastConnection)
+                    terminal.sendText("cd " + fastOpenConnectionProjectPath);
+                else if (server.configuration.path !== undefined) {
+                    terminal.sendText("cd " + server.configuration.path);
+                }
             }
             // If custom commands defined send it to terminal
             if (vscode.workspace.getConfiguration('sshextension').customCommands.length) {
@@ -276,7 +280,7 @@ function createForwarding(serverName){
         }
         else {
             vsUtil.pick(recentlyUsedForwardings, 'Select forwarding arguments from recently used...').then(function (forwardingArgs) {
-                if (forwardingArgs) return;
+                if (forwardingArgs === undefined) return;
                 openSSHConnection(serverName, false, forwardingArgs);
             });
         }

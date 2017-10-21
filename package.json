@@ -2,7 +2,7 @@
   "name": "sshextension",
   "displayName": "SSHExtension",
   "description": "Extension for SSH connections using the ftp-simple settings",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "publisher": "kondratiev",
   "license": "MIT",
   "engines": {
@@ -61,12 +61,12 @@
             "type": "string"
            },
           "default": [],
-          "description": "You can save the arguments for port forwarding, which you often use"
+          "description": "In this place stored all saved port forwarding args"
         },
         "sshextension.openProjectCatalog": {
           "type": "boolean",
           "default": false,
-          "description": "Open the project directory from the ftp-simple config, if it exists, after starting the SSH session started with the button in status bar"
+          "description": "Open the project directory from the ftp-simple config, if it exists, after starting the SSH session"
         }
       }
     }
