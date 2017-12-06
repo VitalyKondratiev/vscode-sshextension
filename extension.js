@@ -146,7 +146,7 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
     }, {"terminalName" : serverName, "isForwarding": (forwardingArgs != null)});
     var terminalIsNew = true;
     var hasErrors = false;
-    if (terminal === undefined) { // If the terminal does not exist
+    if (terminal === undefined || (vscode.workspace.getConfiguration('sshextension').allowMultipleConnections && forwardingArgs == null)) { // If the terminal does not exist
         vsUtil.output(outputChannel, "New terminal session initialization for '" + server.configuration.host + "'...");
         if (server.configuration.host === undefined || server.configuration.username === undefined) {
             vsUtil.output(outputChannel, "Check host or username for '" + server.configuration.host + "'");

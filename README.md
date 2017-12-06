@@ -99,6 +99,19 @@ For example:
 }
 ```
 
+#### sshextension.allowMultipleConnections
+
+  * Type: `Boolean`
+  * Defaut: `false`
+
+Allow you open few connections for one server at the same time.  
+For example:
+```json
+{
+  "sshextension.allowMultipleConnections": true
+}
+```
+
 ## Roadmap
 
 Add the ability to work with an external terminal.  

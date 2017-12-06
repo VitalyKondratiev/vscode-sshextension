@@ -2,7 +2,7 @@
   "name": "sshextension",
   "displayName": "SSHExtension",
   "description": "Extension for SSH connections using the ftp-simple settings",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "kondratiev",
   "license": "MIT",
   "engines": {
@@ -67,6 +67,11 @@
           "type": "boolean",
           "default": false,
           "description": "Open the project directory from the ftp-simple config, if it exists, after starting the SSH session"
+        },
+        "sshextension.allowMultipleConnections": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow you open few connections for one server at the same time"
         }
       }
     }
