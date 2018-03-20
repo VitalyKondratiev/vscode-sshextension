@@ -15,6 +15,18 @@ var fastOpenConnectionProjectPath = null;
 var servers = [];
 var terminals = [];
 
+// Shows a list of servers and returns a promise for what to do with the server
+function selectServer() {
+    if (!servers.length) {
+        vscode.window.showInformationMessage("You don't have any servers");
+        return;
+    }
+
+    // Show Command Palette with server list of servers
+    // Return promise to allow for .then(...)
+    return vsUtil.pick(servers.map(s => s.name), 'Select the server to connect...');
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -23,36 +35,12 @@ function activate(context) {
 
     // Command palette 'Open SSH Connection'
     context.subscriptions.push(vscode.commands.registerCommand('sshextension.openConnection', function () {
-        if (!servers.length) {
-            vscode.window.showInformationMessage("You don't have any servers");
-            return;
-        }
-        // Create list of server names
-        var names = [];
-        servers.forEach(function (element) {
-            names.push(element.name);
-        }, this);
-        // Show Command Palette with server list of servers
-        vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
-            openSSHConnection(item, false);
-        })
+        selectServer().then(s => openSSHConnection(s, false));
     }));
 
     // Command palette 'SSH Port Forwarding'
     context.subscriptions.push(vscode.commands.registerCommand('sshextension.portForwarding', function () {
-        if (!servers.length) {
-            vscode.window.showInformationMessage("You don't have any servers");
-            return;
-        }
-        // Create list of server names
-        var names = [];
-        servers.forEach(function (element) {
-            names.push(element.name);
-        }, this);
-        // Show Command Palette with server list of servers
-        vsUtil.pick(names, 'Select the server to connect...').then(function (item) {
-            createForwarding(item);
-        })
+        selectServer().then(s => createForwarding(s));
     }));
 
     // Launch reload ftp-simple config if changed
