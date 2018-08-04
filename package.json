@@ -100,6 +100,7 @@
   "dependencies": {
     "command-exists": "^1.2.2",
     "is-path-inside": "^1.0.0",
+    "moment": "^2.22.2",
     "upath": "^1.0.0"
   }
 }

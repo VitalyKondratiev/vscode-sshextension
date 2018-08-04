@@ -5,6 +5,7 @@ var vsUtil = require('./lib/vs-util');
 var cryptoUtil = require('./lib/crypto-util');
 var commandExistsSync = require('command-exists').sync;
 var upath = require("upath");
+var moment = require("moment");
 var isPathInside = require('is-path-inside');
 const CONFIG_NAME = "ftp-simple.json";
 
@@ -24,7 +25,7 @@ function selectServer() {
 
     // Show Command Palette with server list of servers
     // Return promise to allow for .then(...)
-    return vsUtil.pick(servers.map(s => s.name), 'Select the server to connect...');
+    return vscode.window.showQuickPick(servers.map(s => s.name), 'Select the server to connect...');
 }
 
 // this method is called when your extension is activated
@@ -57,7 +58,7 @@ function activate(context) {
         }, event);
         if (terminal === undefined) return;
         terminals.shift(terminal);
-        vsUtil.output(outputChannel, "A terminal with a session for '" + terminal.host + "' has been killed.");
+        outputChannel.appendLine("A terminal with a session for '" + terminal.host + "' has been killed.");
     }));
     // If the edited file is in the project directory
     context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(function (event) {
@@ -81,7 +82,7 @@ function loadFtpSimpleConfig() {
         json = cryptoUtil.decrypt(json);
         json = JSON.parse(json);
     } catch (e) {
-        vsUtil.error("Check Simple-FTP config file syntax.");
+        vscode.window.showErrorMessage("Check Simple-FTP config file syntax.");
         result = false;
     }
     return { "result": result, "json": json };
@@ -104,10 +105,10 @@ function loadServerList(source) {
             var server = { "name": element.name, "configuration": element };
             servers.push(server);
         }, this);
-        vsUtil.output(outputChannel, "Loaded " + servers.length + " server(s)");
+        outputChannel.appendLine("Loaded " + servers.length + " server(s)");
     }
     else {
-        vsUtil.output("Unable to load server list, check Simple-FTP configuration file.");
+        outputChannel.appendLine("Unable to load server list, check Simple-FTP configuration file.");
         return false;
     }
     return true;
@@ -117,11 +118,11 @@ function loadServerList(source) {
 function checkSSHExecutable() {
     var checkResult = commandExistsSync('ssh');
     if (checkResult) {
-        vsUtil.output(outputChannel, "Find ssh on your system.");
+        outputChannel.appendLine("Find ssh on your system.");
     } else {
-        vsUtil.output(outputChannel, "Did not find ssh on your system.");
+        outputChannel.appendLine("Did not find ssh on your system.");
     }
-    vsUtil.output(outputChannel, "If you use a third-party terminal, then make sure that there is an SSH utility.");
+    outputChannel.appendLine("If you use a third-party terminal, then make sure that there is an SSH utility.");
     return checkResult;
 }
 
@@ -135,9 +136,9 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
     var terminalIsNew = true;
     var hasErrors = false;
     if (terminal === undefined || (vscode.workspace.getConfiguration('sshextension').allowMultipleConnections && forwardingArgs == null)) { // If the terminal does not exist
-        vsUtil.output(outputChannel, "New terminal session initialization for '" + server.configuration.host + "'...");
+        outputChannel.appendLine("New terminal session initialization for '" + server.configuration.host + "'...");
         if (server.configuration.host === undefined || server.configuration.username === undefined) {
-            vsUtil.output(outputChannel, "Check host or username for '" + server.configuration.host + "'");
+            outputChannel.appendLine("Check host or username for '" + server.configuration.host + "'");
             hasErrors = true;
         }
         var sshCommand = 'ssh ' + ((forwardingArgs != null) ? forwardingArgs + " " : "") + server.configuration.host + ' -l ' + server.configuration.username;
@@ -181,11 +182,11 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
     }
     if (!hasErrors) {
         terminal.show();
-        vsUtil.output(outputChannel, "A terminal with a session for '" + server.configuration.host + "' has been " + ((terminalIsNew) ? "created and displayed" : "displayed."));
+        outputChannel.appendLine("A terminal with a session for '" + server.configuration.host + "' has been " + ((terminalIsNew) ? "created and displayed" : "displayed."));
     }
     else {
-        vsUtil.output(outputChannel, "A terminal with a session for '" + server.configuration.host + "' has been not started, because errors were found.");
-        vsUtil.error("Terminal has been not started, check output for more info.", "Check output", function () {
+        outputChannel.appendLine("A terminal with a session for '" + server.configuration.host + "' has been not started, because errors were found.");
+        vscode.window.showErrorMessage("Terminal has been not started, check output for more info.", "Check output").then(function(button){
             outputChannel.show();
         });
     }
@@ -206,7 +207,7 @@ function createForwarding(serverName){
     }
     function toRecentlyUsed(recentlyUsedForwardings, forwardingArgs){
         if (recentlyUsedForwardings.indexOf(forwardingArgs) == -1) {
-            vsUtil.msg("Want to save this forwarding in recently used?", "Yes").then(function(button){
+            vscode.window.showInformationMessage("Want to save this forwarding in recently used?", "Yes").then(function(button){
                 if (button == "Yes"){
                     recentlyUsedForwardings.push(forwardingArgs);
                     vscode.workspace.getConfiguration("sshextension").update("recentlyUsedForwardings", recentlyUsedForwardings, true)
@@ -240,17 +241,17 @@ function createForwarding(serverName){
         types['Recently used'] = {};
     }
     // Show select of types
-    vsUtil.pick(Object.keys(types), 'Select forwarding type...').then(function (type) {
+    vscode.window.showQuickPick(Object.keys(types), 'Select forwarding type...').then(function (type) {
         if (type === undefined) return;
         // Show input for first address
         if (type != "Recently used"){
-            vsUtil.input({"validateInput": (s) => {
+            vscode.window.showInputBox({"validateInput": (s) => {
                 return validateHostPort(s, types[type].firstDomainReq)
             },"prompt": types[type].firstAdressPrompt, "ignoreFocusOut" : true}).then(function (firstAddress) {
                 if (firstAddress === undefined || !firstAddress.length) return;
                 if (type != "SOCKS"){
                     // Show input for second address
-                    vsUtil.input({"validateInput": (s) => {
+                    vscode.window.showInputBox({"validateInput": (s) => {
                         return validateHostPort(s, types[type].secondDomainReq)
                     }, "prompt": types[type].secondAddressPrompt, "ignoreFocusOut" : true}).then(function (secondAddress) {
                         if (secondAddress === undefined || !secondAddress.length) return;
@@ -267,7 +268,7 @@ function createForwarding(serverName){
             });
         }
         else {
-            vsUtil.pick(recentlyUsedForwardings, 'Select forwarding arguments from recently used...').then(function (forwardingArgs) {
+            vscode.window.showQuickPick(recentlyUsedForwardings, 'Select forwarding arguments from recently used...').then(function (forwardingArgs) {
                 if (forwardingArgs === undefined) return;
                 openSSHConnection(serverName, false, forwardingArgs);
             });
@@ -321,7 +322,14 @@ function manageFastOpenConnectionButtonState() {
 
 // Initialize extension
 function initExtension() {
-    outputChannel = vsUtil.getOutputChannel("ssh-extension");
+    outputChannel = vscode.window.createOutputChannel("ssh-extension");
+    outputChannel.appendLine = (function(_super) {
+        return function() {
+            var now_formatted = moment().format("YYYY-MM-DD HH:mm:ss");
+            arguments[0] = "[" + now_formatted + "] " + arguments[0];
+            return _super.apply(this, arguments);
+        };
+    })(outputChannel.appendLine);
     checkSSHExecutable();
     loadServerList(loadFtpSimpleConfig());
     fastOpenConnectionButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
