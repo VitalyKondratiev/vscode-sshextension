@@ -1,13 +1,11 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 var vscode = require('vscode');
-var vsUtil = require('./lib/vs-util');
-var cryptoUtil = require('./lib/crypto-util');
 var commandExistsSync = require('command-exists').sync;
 var upath = require("upath");
 var moment = require("moment");
 var isPathInside = require('is-path-inside');
-const CONFIG_NAME = "ftp-simple.json";
+var configLoader = require('./adapters/config-loader');
 
 var outputChannel = null;
 var fastOpenConnectionButton = null;
@@ -44,13 +42,15 @@ function activate(context) {
         selectServer().then(s => createForwarding(s));
     }));
 
-    // Launch reload ftp-simple config if changed
-    context.subscriptions.push(vscode.workspace.onWillSaveTextDocument(function (event) {
-        var remoteTempPath = upath.normalize(event.document.fileName);
-        var configTempPath = upath.normalize(vsUtil.getConfigPath() + 'ftp-simple-temp.json');
-        if (configTempPath != remoteTempPath) return;
-        loadServerList(event.document.getText());
-    }));
+    // Launch reload configs if config files has been changed
+    Object.keys(configLoader.supported_configs).forEach(function (filename) {
+        if (!configLoader.exists(filename)) return;
+        configLoader.watcher.add(configLoader.getUserSettingsLocation(filename));
+        configLoader.watcher.on('change', function(file) {
+            loadServerList(loadServerConfigs());
+        });
+    });
+
     // If terminal closed 
     context.subscriptions.push(vscode.window.onDidCloseTerminal(function (event) {
         var terminal = terminals.find(function (element, index, array) {
@@ -75,17 +75,13 @@ function deactivate() {
 }
 
 // Loads an object that contains a list of servers in JSON format
-function loadFtpSimpleConfig() {
+function loadServerConfigs() {
     var result = true;
-    var json = vsUtil.getConfig(CONFIG_NAME);
-    try {
-        json = cryptoUtil.decrypt(json);
-        json = JSON.parse(json);
-    } catch (e) {
-        vscode.window.showErrorMessage("Check Simple-FTP config file syntax.");
-        result = false;
-    }
-    return { "result": result, "json": json };
+    var { merged_configs, messages } = configLoader.getConfigContents();
+    messages.forEach(function(message){
+        outputChannel.appendLine(message);
+    });
+    return { "result": result, "json": merged_configs };
 }
 
 // Function initializes an array of servers from a string or JSON object
@@ -101,14 +97,12 @@ function loadServerList(source) {
     if (serversConfig.result) {
         servers = [];
         serversConfig.json.forEach(function (element) {
-            if (element.type != "sftp") return;
             var server = { "name": element.name, "configuration": element };
             servers.push(server);
         }, this);
-        outputChannel.appendLine("Loaded " + servers.length + " server(s)");
     }
     else {
-        outputChannel.appendLine("Unable to load server list, check Simple-FTP configuration file.");
+        outputChannel.appendLine("Unable to load server list, check configuration files.");
         return false;
     }
     return true;
@@ -331,7 +325,7 @@ function initExtension() {
         };
     })(outputChannel.appendLine);
     checkSSHExecutable();
-    loadServerList(loadFtpSimpleConfig());
+    loadServerList(loadServerConfigs());
     fastOpenConnectionButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     fastOpenConnectionButton.command = "sshextension.fastOpenConnection";
     manageFastOpenConnectionButtonState();
