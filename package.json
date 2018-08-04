@@ -49,17 +49,17 @@
           ],
           "items": {
             "type": "string"
-           },
+          },
           "default": [],
           "description": "Specifies custom commands which will execute on session start"
         },
-        "sshextension.recentlyUsedForwardings":  {
+        "sshextension.recentlyUsedForwardings": {
           "type": [
             "array"
           ],
           "items": {
             "type": "string"
-           },
+          },
           "default": [],
           "description": "In this place stored all saved port forwarding args"
         },
