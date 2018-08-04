@@ -55,6 +55,7 @@ function ConfigFormatter(content) {
 			var config = {
 				"name": element.name, // Used for serverlist
 				"username": element.username,	// Used for authorization
+				"password": element.password,	// Used for authorization (can be undefined)
 				"host": element.host,	// Used for authorization
 				"port": element.port,	// Used for authorization (can be undefined)
 				"privateKey": element.privateKey,	// Used for authorization (can be undefined)
