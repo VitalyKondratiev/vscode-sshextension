@@ -72,6 +72,58 @@
           "type": "boolean",
           "default": false,
           "description": "Allow you open few connections for one server at the same time"
+        },
+        "sshextension.serverList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of server (used for showing in servers list)",
+                "required": true
+              },
+              "username": {
+                "type": "string",
+                "description": "Username of server",
+                "required": true
+              },
+              "password": {
+                "type": "string",
+                "description": "Password of server (not required)",
+                "required": false
+              },
+              "host": {
+                "type": "string",
+                "description": "Host of server",
+                "required": true
+              },
+              "port": {
+                "type": "integer",
+                "description": "Port of server (not required, default 22)",
+                "default": 22
+              },
+              "privateKey": {
+                "type": "string",
+                "description": "Path to private key for server (not required)",
+                "required": false
+              },
+              "project": {
+                "type": "object",
+                "description": "Map project workspace to server (not required)",
+                "examples": {
+                  "C:/localProject1": "/var/www/remoteProject1",
+                  "C:/localProject2": "/var/www/remoteProject2"
+                }
+              },
+              "path": {
+                "type": "string",
+                "description": "Path on server for `cd` command after session start (not required)",
+                "required": false
+              }
+            }
+          },
+          "default": []
         }
       }
     }

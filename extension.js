@@ -43,12 +43,12 @@ function activate(context) {
     }));
 
     // Launch reload configs if config files has been changed
-    Object.keys(configLoader.supported_configs).forEach(function (filename) {
-        if (!configLoader.exists(filename)) return;
-        configLoader.watcher.add(configLoader.getUserSettingsLocation(filename));
-        configLoader.watcher.on('change', function(file) {
-            loadServerList(loadServerConfigs());
-        });
+    configLoader.startWatchers();
+    configLoader.watcher.on('change', function(file) {
+        loadServerList(loadServerConfigs());
+    });
+    vscode.workspace.onDidChangeConfiguration(function (event) {
+        loadServerList(loadServerConfigs());
     });
 
     // If terminal closed 

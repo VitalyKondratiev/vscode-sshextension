@@ -1,4 +1,6 @@
 const crypto = require('crypto');
+const format = require('../config-format');
+var adapter = {};
 
 function Crypto() {
 	this.KEY = "3134626336333765663466623436663233346636383438353432623336653463";
@@ -43,7 +45,9 @@ Crypto.prototype =
 		}
 	};
 
-function ConfigFormatter(content) {
+adapter.filename = 'ftp-simple.json';
+adapter.codesettings = false;
+adapter.formatter = function(content) {
 	var c = new Crypto();
 	var json = c.decrypt(content);
 	var result = true;
@@ -52,18 +56,7 @@ function ConfigFormatter(content) {
 		var parsed_array = JSON.parse(json);
 		parsed_array.forEach(function (element) {
 			if (element.type != "sftp") return;
-			var config = {
-				"name": element.name, // Used for serverlist
-				"username": element.username,	// Used for authorization
-				"password": element.password,	// Used for authorization (can be undefined)
-				"host": element.host,	// Used for authorization
-				"port": element.port,	// Used for authorization (can be undefined)
-				"privateKey": element.privateKey,	// Used for authorization (can be undefined)
-				"agent": element.agent,	// Used for authorization (can be undefined)
-				"project": element.project,	// Used for fast button (can be undefined)
-				"path": element.path, // Used for `cd` after start session (can be undefined)
-			};
-			configs_array.push(config);
+			configs_array.push(format(element));
 		});
 	}
 	catch (e) {
@@ -72,4 +65,4 @@ function ConfigFormatter(content) {
 	return { "result": result, "configs": configs_array };
 }
 
-module.exports = ConfigFormatter;
+module.exports = adapter;
