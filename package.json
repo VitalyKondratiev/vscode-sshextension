@@ -73,6 +73,11 @@
           "default": false,
           "description": "Allow you open few connections for one server at the same time"
         },
+        "sshextension.showHostsInPickLists": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show `user@host` or `name` in pick lists"
+        },
         "sshextension.serverList": {
           "type": "array",
           "items": {
