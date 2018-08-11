@@ -3,6 +3,11 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+# 0.3.0 (Features)
+- Added ability to add server configurations in VSCode settings file
+- Completely rewritten servers configuration load system
+- Added option for customize pick lists
+
 # 0.2.1 (Features)
 - Added option for multiple connections at the same time
 
