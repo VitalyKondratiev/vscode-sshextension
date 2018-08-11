@@ -7,11 +7,10 @@
 
 This extension allows you to open an SSH connection in the integrated terminal.
 The extension was created in order to have access to the SSH in conjunction with the already available access to the FTP.  
-For the server list, the extension configuration file ftp-simple is used.
 
 ## Features
 
-Uses a ready-made server configuration file.  
+You can use configurations from another extensions (e.g. ftp-simple)  
 The connection opens in a new instance of the integrated terminal.  
 SSH port forwarding.
 
@@ -35,24 +34,62 @@ SSH port forwarding.
 - Open the Command Palette (usually `F1` or `Ctrl+Shift+P`).  
 - Select the command `SSHExtension: SSH Port Forwarding`.  
 - Select a forwarding type from: `Local to remote` (-L), `Local to remote` (-R), `SOCKS` (-D), `Recently used` (if exists saved arguments).  
-- Enter the required parameters on request  
-- (Optionally) You can save your selections for faster port forwarding in the future
+- Enter the required parameters on request.  
+- (Optionally) You can save your selections for faster port forwarding in the future.
 
 ![Demo Open connection from list](./images/port_forwarding.gif)
 
-To add a server, see the [ftp-simple configuration file](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple#user-content-config-setting-example).
+To add a server, see Settings section.
 
 ## Requirements
-
-The work requires an extension [ftp-simple](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple).  
   
 You should still have an ssh agent, not necessarily that it is available in the entire system. it is important that it is accessible from the integrated VSCode terminal.
 
 ## Settings (for servers)
 
-For more information on configuring ftp-simple you can find out the page of [this extension](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple#user-content-config-setting-example).
+You can use ready-made config file from this extensions (if you use):
+- ftp-simple ([see info about configuring](https://marketplace.visualstudio.com/items?itemName=humy2833.ftp-simple#user-content-config-setting-example), servers with `"type": "sftp"` only).
+
+Or you can use extension settings simply add `sshextension.serverList` directive.
 
 ## Extension settings
+
+#### sshextension.serverList
+
+  * Type: `Array`
+  * Defaut: `[]`
+
+You can describe servers config in this parameter as array of objects.  
+Server object parameters:  
+- **name** _(string)_* - name of server (showing in picks list if `showHostsInPickLists` is `false`).  
+- **host** _(string)_* - server hostname.
+- **port** _(number)_ - SSH port. 
+- **username** _(string)_* - username for authentication.
+- **password** _(string)_ - password for authentication.
+- **privateKey** _(string)_ - string that contains a path to private key.
+- **project**  _(object)_ - specify local workspace path and server root path for fast terminal open.
+- **path** _(string)_ - used for change directory after server connection.
+
+For example:
+```json
+{
+    "sshextension.serverList": [
+        {
+            "name": "Example server",
+            "host": "example.com",
+            "port": 22,
+            "username": "user",
+            "privateKey": "D:\\id_rsa",
+            "project": {
+                "D:/projects/project": "/home/user/project",
+                "D:/projects/yet_another_project": "/home/user/yet_another_project"
+            },
+            "path": "/"
+        },
+        ...
+    ]
+}
+```
 
 #### sshextension.customCommands
 
@@ -109,6 +146,19 @@ For example:
 ```json
 {
   "sshextension.allowMultipleConnections": true
+}
+```
+
+#### sshextension.showHostsInPickLists
+
+  * Type: `Boolean`
+  * Defaut: `false`
+
+Show usernames and hosthames in pick lists instead on server names.  
+For example:
+```json
+{
+  "sshextension.showHostsInPickLists": true
 }
 ```
 

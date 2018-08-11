@@ -2,7 +2,7 @@
   "name": "sshextension",
   "displayName": "SSHExtension",
   "description": "Extension for SSH connections using the ftp-simple settings",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "kondratiev",
   "license": "MIT",
   "engines": {
@@ -76,7 +76,7 @@
         "sshextension.showHostsInPickLists": {
           "type": "boolean",
           "default": false,
-          "description": "Show `user@host` or `name` in pick lists"
+          "description": "Show usernames and hosthames in pick lists instead on server names"
         },
         "sshextension.serverList": {
           "type": "array",
@@ -85,40 +85,40 @@
             "properties": {
               "name": {
                 "type": "string",
-                "description": "Name of server (used for showing in servers list)",
+                "description": "Name of server",
                 "required": true
               },
               "username": {
                 "type": "string",
-                "description": "Username of server",
+                "description": "Username for authentication",
                 "required": true
               },
               "password": {
                 "type": "string",
-                "description": "Password of server (not required)",
+                "description": "Password for authentication",
                 "required": false
               },
               "host": {
                 "type": "string",
-                "description": "Host of server",
+                "description": "Server hostname",
                 "required": true
               },
               "port": {
                 "type": "integer",
-                "description": "Port of server (not required, default 22)",
+                "description": "SSH port",
                 "default": 22
               },
               "privateKey": {
                 "type": "string",
-                "description": "Path to private key for server (not required)",
+                "description": "String that contains a path to private key",
                 "required": false
               },
               "project": {
                 "type": "object",
-                "description": "Map project workspace to server (not required)",
+                "description": "Specify local workspace path and server root path",
                 "examples": {
-                  "C:/localProject1": "/var/www/remoteProject1",
-                  "C:/localProject2": "/var/www/remoteProject2"
+                  "D:/projects/project": "/home/user/project",
+                  "D:/projects/yet_another_project": "/home/user/yet_another_project"
                 }
               },
               "path": {
@@ -128,7 +128,8 @@
               }
             }
           },
-          "default": []
+          "default": [],
+          "description": "You can describe servers config here"
         }
       }
     }
