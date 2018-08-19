@@ -5,7 +5,7 @@ const filewatcher = require('filewatcher');
 const config = {};
 module.exports = config;
 
-path.join = (function (_super) {
+var pathjoin = (function (_super) {
   return function () {
     return path.normalize(_super.apply(this, arguments)).replace(/\\/g, '/');
   }
@@ -29,9 +29,9 @@ config.startWatchers = function () {
   });
 }
 config.getUserSettingsLocation = function (filename) {
-  var folder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.platform == 'linux' ? path.join(homedir, '.config') : '/var/local');
+  var folder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.platform == 'linux' ? pathjoin(homedir, '.config') : '/var/local');
   if (/^[A-Z]\:[/\\]/.test(folder)) folder = folder.substring(0, 1).toLowerCase() + folder.substring(1);
-  return path.join(folder, "/Code/User/", filename ? filename : "");
+  return pathjoin(folder, "/Code/User/", filename ? filename : "");
 }
 config.exists = function (filename, local = false) {
   var result = true;
