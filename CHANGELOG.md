@@ -3,6 +3,9 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+# 0.3.1 (Patch)
+- Fixed "tsserver was deleted" error.  
+
 # 0.3.0 (Features)
 - Added ability to add server configurations in VSCode settings file
 - Completely rewritten servers configuration load system
