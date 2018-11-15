@@ -3,6 +3,10 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+# 0.4.0
+- Added "customCommands" parameter for each server in list
+- All custom commands send to terminal in one time
+
 # 0.3.1 (Patch)
 - Fixed "tsserver was deleted" error.  
 

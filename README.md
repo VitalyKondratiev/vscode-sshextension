@@ -69,6 +69,7 @@ Server object parameters:
 - **privateKey** _(string)_ - string that contains a path to private key.
 - **project**  _(object)_ - specify local workspace path and server root path for fast terminal open.
 - **path** _(string)_ - used for change directory after server connection.
+- **customCommands** _(array of strings)_ - specifies custom commands which will execute on session start
 
 For example:
 ```json
@@ -84,7 +85,10 @@ For example:
                 "D:/projects/project": "/home/user/project",
                 "D:/projects/yet_another_project": "/home/user/yet_another_project"
             },
-            "path": "/"
+            "path": "/",
+            "customCommands": [
+              "pwd"
+            ]
         },
         ...
     ]

@@ -163,10 +163,11 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
                 }
             }
             // If custom commands defined send it to terminal
-            if (vscode.workspace.getConfiguration('sshextension').customCommands.length) {
-                vscode.workspace.getConfiguration('sshextension').customCommands.forEach(function(command) {
-                    terminal.sendText(command);
-                }, this);
+            if (server.configuration.customCommands !== undefined && server.configuration.customCommands.length) {
+                terminal.sendText(server.configuration.customCommands.join(' && '))
+            }
+            else if (vscode.workspace.getConfiguration('sshextension').customCommands.length) {
+                terminal.sendText(vscode.workspace.getConfiguration('sshextension').customCommands.join(' && '));
             }
         }
     }

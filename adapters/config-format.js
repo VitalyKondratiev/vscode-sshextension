@@ -12,6 +12,7 @@ var format = function (element){
     "agent": element.agent,	// Used for authorization (can be undefined)
     "project": element.project,	// Used for fast button (can be undefined)
     "path": element.path, // Used for `cd` after start session (can be undefined)
+    "customCommands": element.customCommands, // Used for specify commands which will execute on session start
   };
   return config;
 }

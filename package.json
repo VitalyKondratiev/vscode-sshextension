@@ -2,7 +2,7 @@
   "name": "sshextension",
   "displayName": "SSHExtension",
   "description": "Extension for SSH connections using the ftp-simple settings",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "publisher": "kondratiev",
   "license": "MIT",
   "engines": {
@@ -125,6 +125,16 @@
                 "type": "string",
                 "description": "Path on server for `cd` command after session start (not required)",
                 "required": false
+              },
+              "customCommands": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "default": [],
+                "description": "Specifies custom commands which will execute on session start"
               }
             }
           },
