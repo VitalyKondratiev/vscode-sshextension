@@ -164,7 +164,7 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
             }
             // If custom commands defined send it to terminal
             if (server.configuration.customCommands !== undefined && server.configuration.customCommands.length) {
-                terminal.sendText(server.configuration.customCommands.join(' && '))
+                terminal.sendText(server.configuration.customCommands.join(' && '));
             }
             else if (vscode.workspace.getConfiguration('sshextension').customCommands.length) {
                 terminal.sendText(vscode.workspace.getConfiguration('sshextension').customCommands.join(' && '));
@@ -190,8 +190,8 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
 
 function createForwarding(serverName){
     function validateHostPort(port, domainReq = false){
-        var portRegex = /^(?:(?:\S^|[^:])+:{1})?(?:[0-5]?\d{1,4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2]\d|6553[0-6]){1}$/;
-        if (domainReq) portRegex = /^(?:(?:\S^|[^:])+:{1}){1}(?:[0-5]?\d{1,4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2]\d|6553[0-6]){1}$/;
+        var portRegex = /^(?:(?:\S|[^:])+:{1})?(?:[0-5]?\d{1,4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2]\d|6553[0-6]){1}$/;
+        if (domainReq) portRegex = /^(?:(?:\S|[^:])+:{1}){1}(?:[0-5]?\d{1,4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2]\d|6553[0-6]){1}$/;
         return (portRegex.test(port)) ? null : "Please enter a domain " + (!domainReq ? "(optional)  ": "") + "and port in range 0 - 65535 (e. g. localhost:9000" + (!domainReq ? " or 9000": "")+ ")";
     }
     function createForwardingArgs(option, firstAddress, secondAddress = null) {
@@ -285,7 +285,7 @@ function getProjectByFilePath(filePath) {
         Object.keys(element.configuration.project).forEach(function (item) {
             // Get project path with fixed drive letter case
             var serverProjectPath = upath.normalize(item);
-            serverProjectPath = item.replace(/\w:/g, function (g) { return g.toLowerCase() });
+            serverProjectPath = serverProjectPath.replace(/\w:/g, function (g) { return g.toLowerCase() });
             thisServerMapped = isPathInside(openedFileName, serverProjectPath);
             if (thisServerMapped) {
                 projectPath = element.configuration.project[item];
