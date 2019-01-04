@@ -3,6 +3,9 @@ All notable changes to the "sshextension" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## 0.5.0 (Features)
+- Added API method for getting terminals created by this extension
+
 ## 0.4.1 (Patch)
 - Small code impovements
 

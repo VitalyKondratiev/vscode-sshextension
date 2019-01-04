@@ -67,6 +67,15 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('sshextension.fastOpenConnection', function (c) {
         openSSHConnection(fastOpenConnectionServerName, true);
     }));
+
+    var api = {
+        connections(host = '', username = '') {
+            return terminals.filter(function (element, index, array) {
+                return (element.host == host || !host.length) && (element.username == username || !username.length)
+            })
+        }
+    }
+    return api;
 }
 exports.activate = activate;
 
@@ -150,7 +159,7 @@ function openSSHConnection(serverName, isFastConnection, forwardingArgs = null) 
         }
         if (!hasErrors) {
             terminal = vscode.window.createTerminal(serverName + ((forwardingArgs != null) ? " (Forwarding)" : ""));
-            terminals.push({ "name": serverName, "host": server.configuration.host, "terminal": terminal, "isForwarding": (forwardingArgs != null) });
+            terminals.push({ "name": serverName, "username": server.configuration.username, "host": server.configuration.host, "terminal": terminal, "isForwarding": (forwardingArgs != null) });
             terminal.sendText(sshCommand);
             if (sshAuthorizationMethod == "byPass") {
                 terminal.sendText(server.configuration.password);
